@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Travel Planner</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Floating circles (background animation) */
+        .bg span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.1);
+            animation: float 20s linear infinite;
+            border-radius: 50%;
+        }
+
+        .bg span:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .bg span:nth-child(2) { left: 30%; animation-delay: 5s; }
+        .bg span:nth-child(3) { left: 50%; animation-delay: 10s; }
+        .bg span:nth-child(4) { left: 70%; animation-delay: 3s; }
+        .bg span:nth-child(5) { left: 90%; animation-delay: 7s; }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); }
+            100% { transform: translateY(-10vh) scale(1.5); }
+        }
+
+        .container {
+            width: 900px;
+            display: flex;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .left {
+            flex: 1;
+            background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470') center/cover;
+        }
+
+        .right {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 15px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(45deg, #ff512f, #dd2476);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .plan {
+            margin-top: 25px;
+        }
+
+        .plan h3 {
+            margin-bottom: 10px;
+        }
+
+        .day {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="bg">
+    <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<div class="container">
+
+    <div class="left"></div>
+
+    <div class="right">
+        <h1>✈️ AI Travel Planner</h1>
+        <p>Plan your perfect trip with AI in seconds</p>
+
+        <form method="POST">
+            <input type="text" name="user_input"
+                placeholder="e.g. Plan 3 day trip to Goa under 8000"
+                required>
+            <button type="submit">✨ Generate Plan</button>
+        </form>
+
+        {% if plan %}
+        <div class="plan">
+            <h3>🌍 Your Itinerary</h3>
+            {% for day in plan %}
+                <div class="day">{{ day }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            Built with AI • IBM Watson • Flask
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
