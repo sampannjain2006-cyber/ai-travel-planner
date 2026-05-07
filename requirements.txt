@@ -1,2 +1,4 @@
 flask
 ibm-watson
+requests
+ibmcloudant

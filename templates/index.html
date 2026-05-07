@@ -1,176 +1,304 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="dark">
 <head>
-    <title>AI Travel Planner</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Travel Planner</title>
+<meta name="description" content="Plan your perfect trip anywhere in the world using AI-powered itinerary generation.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sky: #38bdf8;
+  --sky-dark: #0ea5e9;
+  --sky-light: #7dd3fc;
+  --sky-glow: rgba(56,189,248,0.25);
+  --bg: #0a0f1e;
+  --bg2: #0f172a;
+  --bg3: #1e293b;
+  --card: rgba(15,23,42,0.85);
+  --border: rgba(56,189,248,0.18);
+  --text: #f0f9ff;
+  --text2: #94a3b8;
+  --shadow: 0 25px 60px rgba(0,0,0,0.5);
+}
+[data-theme="light"] {
+  --bg: #e0f2fe;
+  --bg2: #f0f9ff;
+  --bg3: #e0f2fe;
+  --card: rgba(255,255,255,0.9);
+  --border: rgba(14,165,233,0.25);
+  --text: #0c1a2e;
+  --text2: #475569;
+  --shadow: 0 25px 60px rgba(14,165,233,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{min-height:100vh;background:var(--bg);color:var(--text);transition:background 0.3s,color 0.3s;overflow-x:hidden;}
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+/* Animated background */
+.bg-anim{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.bg-anim span{position:absolute;border-radius:50%;background:var(--sky-glow);animation:rise 18s linear infinite;}
+.bg-anim span:nth-child(1){width:18px;height:18px;left:10%;animation-delay:0s;}
+.bg-anim span:nth-child(2){width:30px;height:30px;left:25%;animation-delay:4s;}
+.bg-anim span:nth-child(3){width:12px;height:12px;left:50%;animation-delay:9s;}
+.bg-anim span:nth-child(4){width:24px;height:24px;left:70%;animation-delay:2s;}
+.bg-anim span:nth-child(5){width:16px;height:16px;left:85%;animation-delay:6s;}
+@keyframes rise{0%{transform:translateY(110vh) scale(0);opacity:0;}50%{opacity:1;}100%{transform:translateY(-10vh) scale(1.6);opacity:0;}}
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+/* Layout */
+.layout{position:relative;z-index:1;display:grid;grid-template-columns:340px 1fr;min-height:100vh;}
 
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
+/* Sidebar History */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow:hidden;}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sidebar-header h2{font-size:15px;font-weight:600;color:var(--sky);display:flex;align-items:center;gap:8px;}
+.history-count{background:var(--sky);color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.sidebar-list{flex:1;overflow-y:auto;padding:12px;}
+.sidebar-list::-webkit-scrollbar{width:4px;}
+.sidebar-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.history-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;position:relative;}
+.history-item:hover{border-color:var(--sky);box-shadow:0 0 0 1px var(--sky),0 4px 20px var(--sky-glow);transform:translateY(-1px);}
+.history-item .loc{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.history-item .loc .flag{font-size:16px;}
+.history-item .meta{font-size:11px;color:var(--text2);margin-top:5px;display:flex;gap:10px;}
+.history-item .query-text{font-size:12px;color:var(--text2);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.del-btn{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;opacity:0;transition:0.2s;padding:2px 5px;border-radius:4px;}
+.history-item:hover .del-btn{opacity:1;}
+.del-btn:hover{color:#f87171;background:rgba(248,113,113,0.1);}
+.empty-history{text-align:center;padding:40px 20px;color:var(--text2);}
+.empty-history .icon{font-size:36px;margin-bottom:10px;}
+.empty-history p{font-size:13px;}
 
-        /* Floating circles (background animation) */
-        .bg span {
-            position: absolute;
-            display: block;
-            width: 20px;
-            height: 20px;
-            background: rgba(255,255,255,0.1);
-            animation: float 20s linear infinite;
-            border-radius: 50%;
-        }
+/* Main content */
+.main{padding:40px 48px;display:flex;flex-direction:column;gap:32px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--sky-dark),var(--sky));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px var(--sky-glow);}
+.logo h1{font-size:22px;font-weight:700;background:linear-gradient(90deg,var(--sky),var(--sky-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo p{font-size:12px;color:var(--text2);margin-top:2px;}
 
-        .bg span:nth-child(1) { left: 10%; animation-delay: 0s; }
-        .bg span:nth-child(2) { left: 30%; animation-delay: 5s; }
-        .bg span:nth-child(3) { left: 50%; animation-delay: 10s; }
-        .bg span:nth-child(4) { left: 70%; animation-delay: 3s; }
-        .bg span:nth-child(5) { left: 90%; animation-delay: 7s; }
+/* Theme toggle */
+.theme-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;transition:all 0.2s;}
+.theme-btn:hover{border-color:var(--sky);color:var(--sky);}
 
-        @keyframes float {
-            0% { transform: translateY(100vh) scale(0); }
-            100% { transform: translateY(-10vh) scale(1.5); }
-        }
+/* Search card */
+.search-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;backdrop-filter:blur(20px);box-shadow:var(--shadow);}
+.search-card h2{font-size:18px;font-weight:600;margin-bottom:6px;}
+.search-card .sub{font-size:13px;color:var(--text2);margin-bottom:24px;}
+.input-row{display:flex;gap:12px;}
+.search-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 18px;font-size:14px;color:var(--text);outline:none;transition:all 0.2s;}
+.search-input::placeholder{color:var(--text2);}
+.search-input:focus{border-color:var(--sky);box-shadow:0 0 0 3px var(--sky-glow);}
+.gen-btn{background:linear-gradient(135deg,var(--sky-dark),#6366f1);color:#fff;border:none;border-radius:12px;padding:14px 28px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.25s;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--sky-glow);}
+.gen-btn:active{transform:translateY(0);}
 
-        .container {
-            width: 900px;
-            display: flex;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
-            backdrop-filter: blur(10px);
-        }
+/* Loading state */
+.loading{display:none;align-items:center;gap:10px;color:var(--sky);font-size:14px;margin-top:14px;}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--sky);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-        .left {
-            flex: 1;
-            background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470') center/cover;
-        }
+/* Itinerary */
+.itinerary-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;backdrop-filter:blur(20px);box-shadow:var(--shadow);}
+.itinerary-card .itin-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.itin-badge{background:linear-gradient(135deg,var(--sky-dark),#6366f1);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#fff;}
+.day-card{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start;animation:fadeUp 0.4s ease forwards;opacity:0;}
+.day-card:nth-child(1){animation-delay:0.05s;}
+.day-card:nth-child(2){animation-delay:0.1s;}
+.day-card:nth-child(3){animation-delay:0.15s;}
+.day-card:nth-child(4){animation-delay:0.2s;}
+.day-card:nth-child(5){animation-delay:0.25s;}
+.day-card:nth-child(6){animation-delay:0.3s;}
+.day-card:nth-child(7){animation-delay:0.35s;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.day-num{min-width:36px;height:36px;background:linear-gradient(135deg,var(--sky-dark),#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.day-text{font-size:14px;line-height:1.6;color:var(--text);padding-top:7px;}
 
-        .right {
-            flex: 1;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(20px);
-            padding: 40px;
-            color: white;
-        }
+/* Modal for history detail */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:32px;max-width:540px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 40px 80px rgba(0,0,0,0.5);animation:popIn 0.25s ease;}
+@keyframes popIn{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:6px;color:var(--sky);}
+.modal .modal-meta{font-size:12px;color:var(--text2);margin-bottom:20px;}
+.modal .modal-day{background:var(--bg3);border-left:3px solid var(--sky);padding:12px 16px;border-radius:0 10px 10px 0;margin-bottom:10px;font-size:13px;line-height:1.6;}
+.modal-close{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 20px;border-radius:10px;cursor:pointer;font-size:13px;margin-top:16px;transition:0.2s;}
+.modal-close:hover{border-color:var(--sky);color:var(--sky);}
 
-        h1 {
-            font-size: 30px;
-            margin-bottom: 10px;
-        }
+.footer{font-size:11px;color:var(--text2);text-align:center;padding:8px 0 24px;}
 
-        p {
-            font-size: 14px;
-            opacity: 0.7;
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
-            margin-bottom: 15px;
-            outline: none;
-            font-size: 14px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
-            background: linear-gradient(45deg, #ff512f, #dd2476);
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
-
-        .plan {
-            margin-top: 25px;
-        }
-
-        .plan h3 {
-            margin-bottom: 10px;
-        }
-
-        .day {
-            background: rgba(255,255,255,0.2);
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 10px;
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 12px;
-            opacity: 0.6;
-        }
-
-    </style>
+/* Responsive */
+@media(max-width:768px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{height:auto;position:relative;max-height:280px;}
+  .main{padding:20px;}
+  .input-row{flex-direction:column;}
+}
+</style>
 </head>
-
 <body>
+<div class="bg-anim"><span></span><span></span><span></span><span></span><span></span></div>
 
-<div class="bg">
-    <span></span><span></span><span></span><span></span><span></span>
-</div>
+<div class="layout">
 
-<div class="container">
-
-    <div class="left"></div>
-
-    <div class="right">
-        <h1>✈️ AI Travel Planner</h1>
-        <p>Plan your perfect trip with AI in seconds</p>
-
-        <form method="POST">
-            <input type="text" name="user_input"
-                placeholder="e.g. Plan 3 day trip to Goa under 8000"
-                required>
-            <button type="submit">✨ Generate Plan</button>
-        </form>
-
-        {% if plan %}
-        <div class="plan">
-            <h3>🌍 Your Itinerary</h3>
-            {% for day in plan %}
-                <div class="day">{{ day }}</div>
-            {% endfor %}
+  <!-- Sidebar: History -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>🕓 Search History
+        <span class="history-count">{{ history|length }}</span>
+      </h2>
+    </div>
+    <div class="sidebar-list">
+      {% if history %}
+        {% for item in history %}
+        <div class="history-item" onclick="openModal('{{ item.id }}','{{ item.location }}','{{ item.days }}','{{ item.budget }}','{{ item.timestamp[:10] }}',{{ item.plan | tojson }})">
+          <div class="loc"><span class="flag">📍</span>{{ item.location }}</div>
+          <div class="meta">
+            <span>{{ item.days }} days</span>
+            {% if item.budget %}<span>₹{{ item.budget }}</span>{% endif %}
+            <span>{{ item.timestamp[:10] }}</span>
+          </div>
+          <div class="query-text">{{ item.query }}</div>
+          <button class="del-btn" onclick="event.stopPropagation();deleteHistory('{{ item.id }}',this)" title="Delete">✕</button>
         </div>
-        {% endif %}
-
-        <div class="footer">
-            Built with AI • IBM Watson • Flask
+        {% endfor %}
+      {% else %}
+        <div class="empty-history">
+          <div class="icon">🗺️</div>
+          <p>No searches yet.<br>Your history will appear here.</p>
         </div>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="topbar">
+      <div class="logo">
+        <div class="logo-icon">✈️</div>
+        <div>
+          <h1>AI Travel Planner</h1>
+          <p>Powered by Gemini 2.5 &amp; IBM Watson</p>
+        </div>
+      </div>
+      <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙 Dark Mode</button>
     </div>
 
+    <!-- Search -->
+    <div class="search-card">
+      <h2>Plan Your Perfect Trip ✨</h2>
+      <p class="sub">Tell us where you want to go, for how many days, and your budget</p>
+      <form method="POST" id="searchForm" onsubmit="showLoading()">
+        <div class="input-row">
+          <input class="search-input" type="text" name="user_input" id="user_input"
+            placeholder="e.g. Plan a 5 day trip to Japan under 80000"
+            value="{{ user_input }}" required>
+          <button class="gen-btn" type="submit" id="genBtn">
+            <span id="btnIcon">✨</span> Generate Plan
+          </button>
+        </div>
+      </form>
+      <div class="loading" id="loadingBar">
+        <div class="spinner"></div> Generating your itinerary with AI…
+      </div>
+    </div>
+
+    <!-- Itinerary Result -->
+    {% if plan %}
+    <div class="itinerary-card">
+      <div class="itin-header">
+        <h2 style="font-size:18px;font-weight:700;">🌍 Your Itinerary</h2>
+        <span class="itin-badge">{{ plan|length }} Days</span>
+      </div>
+      {% for day in plan %}
+        <div class="day-card">
+          <div class="day-num">D{{ loop.index }}</div>
+          <div class="day-text">{{ day }}</div>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="footer">Built with ❤️ using IBM Watson &bull; Google Gemini 2.5 &bull; IBM Cloudant &bull; Flask</div>
+  </main>
 </div>
 
+<!-- History Detail Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <h3 id="modalTitle"></h3>
+    <div class="modal-meta" id="modalMeta"></div>
+    <div id="modalDays"></div>
+    <button class="modal-close" onclick="closeModalDirect()">Close</button>
+  </div>
+</div>
+
+<script>
+// Theme toggle
+const html = document.documentElement;
+const btn = document.getElementById('themeToggle');
+
+function applyTheme(theme) {
+  html.setAttribute('data-theme', theme);
+  btn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+  localStorage.setItem('theme', theme);
+}
+
+function toggleTheme() {
+  applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+// Load saved theme
+const saved = localStorage.getItem('theme') || 'dark';
+applyTheme(saved);
+
+// Loading state
+function showLoading() {
+  document.getElementById('loadingBar').style.display = 'flex';
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('btnIcon').textContent = '⏳';
+}
+
+// Modal
+function openModal(id, location, days, budget, date, plan) {
+  document.getElementById('modalTitle').textContent = '📍 ' + location;
+  let meta = days + ' days';
+  if (budget && budget != '0') meta += ' • ₹' + budget + ' budget';
+  meta += ' • ' + date;
+  document.getElementById('modalMeta').textContent = meta;
+  const box = document.getElementById('modalDays');
+  box.innerHTML = '';
+  (Array.isArray(plan) ? plan : [plan]).forEach(function(d) {
+    const el = document.createElement('div');
+    el.className = 'modal-day';
+    el.textContent = d;
+    box.appendChild(el);
+  });
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+// Delete history entry
+function deleteHistory(id, btn) {
+  if (!confirm('Delete this history entry?')) return;
+  fetch('/history/' + id, { method: 'DELETE' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status === 'deleted') {
+        const item = btn.closest('.history-item');
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-20px)';
+        item.style.transition = 'all 0.3s';
+        setTimeout(function() { item.remove(); }, 300);
+      }
+    })
+    .catch(function() { alert('Failed to delete.'); });
+}
+</script>
 </body>
 </html>
