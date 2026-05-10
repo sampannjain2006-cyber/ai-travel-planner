@@ -17,19 +17,19 @@ load_dotenv()
 app = Flask(__name__)
 
 # ── IBM NLU setup ──────────────────────────────────────────────────────────────
-nlu_apikey = os.environ.get("NLU_API_KEY")
-nlu_url = os.environ.get("NLU_URL")
+nlu_apikey = os.environ.get("NLU_API_KEY", "").strip()
+nlu_url = os.environ.get("NLU_URL", "").strip()
 nlu_authenticator = IAMAuthenticator(nlu_apikey)
 nlu = NaturalLanguageUnderstandingV1(version='2021-08-01', authenticator=nlu_authenticator)
 nlu.set_service_url(nlu_url)
 
 # ── Gemini API setup ──────────────────────────────────────────────────────────
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
 # ── IBM Cloudant setup ────────────────────────────────────────────────────────
-CLOUDANT_API_KEY = os.environ.get("CLOUDANT_API_KEY")
-CLOUDANT_URL = os.environ.get("CLOUDANT_URL")
+CLOUDANT_API_KEY = os.environ.get("CLOUDANT_API_KEY", "").strip()
+CLOUDANT_URL = os.environ.get("CLOUDANT_URL", "").strip()
 CLOUDANT_DB_NAME = "travel_history"
 
 cloudant_authenticator = CloudantIAMAuthenticator(CLOUDANT_API_KEY)
