@@ -2,3 +2,4 @@ flask
 ibm-watson
 requests
 ibmcloudant
+python-dotenv

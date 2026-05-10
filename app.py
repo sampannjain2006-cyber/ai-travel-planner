@@ -9,23 +9,26 @@ import subprocess
 import time
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
 # ── IBM NLU setup ──────────────────────────────────────────────────────────────
-nlu_apikey = os.environ.get("NLU_API_KEY") or "QQk4WAzoL6tAvGE5SKvf9bHW_umYN4wkWcxNQmmcBE9V"
-nlu_url = os.environ.get("NLU_URL") or "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/d75430ab-dcea-4908-af01-9f20c67ffa80"
+nlu_apikey = os.environ.get("NLU_API_KEY")
+nlu_url = os.environ.get("NLU_URL")
 nlu_authenticator = IAMAuthenticator(nlu_apikey)
 nlu = NaturalLanguageUnderstandingV1(version='2021-08-01', authenticator=nlu_authenticator)
 nlu.set_service_url(nlu_url)
 
 # ── Gemini API setup ──────────────────────────────────────────────────────────
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AIzaSyC4E3ppJ_G1RCunyt9UwbncCP_8mg9Dwzc"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
 # ── IBM Cloudant setup ────────────────────────────────────────────────────────
-CLOUDANT_API_KEY = os.environ.get("CLOUDANT_API_KEY") or "vcJfZ9CAcCPyGW_kTVHXtXMZbg7lKbjWqAKC-6jCz2da"
-CLOUDANT_URL = os.environ.get("CLOUDANT_URL") or "https://6eff7f52-5631-4898-84f1-d9d864bbff62-bluemix.cloudantnosqldb.appdomain.cloud"
+CLOUDANT_API_KEY = os.environ.get("CLOUDANT_API_KEY")
+CLOUDANT_URL = os.environ.get("CLOUDANT_URL")
 CLOUDANT_DB_NAME = "travel_history"
 
 cloudant_authenticator = CloudantIAMAuthenticator(CLOUDANT_API_KEY)
