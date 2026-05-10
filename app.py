@@ -271,6 +271,15 @@ def home():
     return render_template("index.html", plan=plan, history=history, user_input=user_input)
 
 
+@app.route("/debug", methods=["GET"])
+def debug_env():
+    return jsonify({
+        "NLU_API_KEY_LEN": len(os.environ.get("NLU_API_KEY", "")),
+        "NLU_URL": os.environ.get("NLU_URL", ""),
+        "NLU_API_KEY_PREFIX": os.environ.get("NLU_API_KEY", "")[:5],
+        "CLOUDANT_URL": os.environ.get("CLOUDANT_URL", "")
+    })
+
 @app.route("/history", methods=["GET"])
 def get_history():
     """API endpoint to fetch history as JSON."""
