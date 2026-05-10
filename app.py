@@ -10,6 +10,7 @@ import time
 import os
 from datetime import datetime
 from dotenv import load_dotenv
+from werkzeug.exceptions import HTTPException
 
 load_dotenv()
 
@@ -285,6 +286,15 @@ def delete_history(doc_id):
         return jsonify({"status": "deleted"})
     return jsonify({"status": "error"}), 500
 
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+    # Return JSON or text for non-HTTP errors
+    import traceback
+    return f"Internal Server Error: {str(e)}\n\nTraceback:\n{traceback.format_exc()}", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
